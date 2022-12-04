@@ -4,7 +4,7 @@ def get_input(path: str) -> list[str]:
     return data
 
 
-def find_overlap(sections: list[str], complete_overlap: bool = True):
+def find_overlap(sections: list[str], complete_overlap: bool = True) -> int:
     count = 0
     for section in sections:
         pair_a, pair_b = section.split(",")
