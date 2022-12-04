@@ -25,7 +25,7 @@ strategy_guide_2 = {
 
 def get_input(path: str) -> list[str]:
     with open(path, mode="r") as file:
-        file_contents = file.read().split("\n")[:-1]
+        file_contents = file.read().split("\n")
 
     return file_contents
 
