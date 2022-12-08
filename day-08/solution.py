@@ -1,4 +1,4 @@
-from pprint import pprint
+from functools import reduce
 
 
 def get_input(path: str):
@@ -8,15 +8,15 @@ def get_input(path: str):
     return trees
 
 
-def trees_below(row, col, matrix):
+def trees_below(row: int, col: int, matrix: list[list[int]]):
     return [r[col] for r in matrix[row + 1 :]]
 
 
-def trees_above(row, col, matrix):
+def trees_above(row: int, col: int, matrix: list[list[int]]):
     return [r[col] for r in matrix[:row]]
 
 
-def get_distance(trees, current):
+def get_distance(trees: list[int], current: int) -> int:
     d = 0
     for t in trees:
         d += 1
@@ -26,7 +26,7 @@ def get_distance(trees, current):
     return d
 
 
-def get_visibility_count_and_highest_scenic_score(matrix):
+def get_visibility_count_and_highest_scenic_score(matrix: list[list[int]]):
     width = 2 * len(matrix[0])
     height = 2 * (len(matrix) - 2)
     visible = width + height
@@ -51,9 +51,15 @@ def get_visibility_count_and_highest_scenic_score(matrix):
             ):
                 visible += 1
 
-                scenic_score = get_distance(left[::-1], current) * get_distance(
-                    right, current
-                ) * get_distance(top[::-1], current) * get_distance(bottom, current)
+                scenic_score = reduce(
+                    lambda x, y: x * y,
+                    [
+                        get_distance(left[::-1], current),
+                        get_distance(right, current),
+                        get_distance(top[::-1], current),
+                        get_distance(bottom, current),
+                    ],
+                )
 
                 if scenic_score > highest_score:
                     highest_score = scenic_score
@@ -63,6 +69,8 @@ def get_visibility_count_and_highest_scenic_score(matrix):
 
 if __name__ == "__main__":
     trees = get_input("day-08/input.txt")
-    visiblility_count, scenic_score = get_visibility_count_and_highest_scenic_score(trees)
-    print('PART 1', visiblility_count)
-    print('PART 2', scenic_score)
+    visiblility_count, scenic_score = get_visibility_count_and_highest_scenic_score(
+        trees
+    )
+    print("PART 1", visiblility_count)
+    print("PART 2", scenic_score)
