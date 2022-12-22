@@ -18,22 +18,16 @@ def get_input(path: str):
 
 def get_yelled_number(key: str, data: dict) -> int:
     if isinstance(data[key], list):
-        if data[key][1] == "+":
-            key1 = data[key][0]
-            key2 = data[key][2]
-            return simplify(get_yelled_number(key1, data) + get_yelled_number(key2, data))
-        if data[key][1] == "-":
-            key1 = data[key][0]
-            key2 = data[key][2]
-            return simplify(get_yelled_number(key1, data) - get_yelled_number(key2, data))
-        if data[key][1] == "*":
-            key1 = data[key][0]
-            key2 = data[key][2]
-            return simplify(get_yelled_number(key1, data) * get_yelled_number(key2, data))
-        if data[key][1] == "/":
-            key1 = data[key][0]
-            key2 = data[key][2]
-            return simplify(get_yelled_number(key1, data) / get_yelled_number(key2, data))
+        key1, key2 = data[key][0], data[key][2]
+        match data[key][1]:
+            case '+':
+                return simplify(get_yelled_number(key1, data) + get_yelled_number(key2, data))
+            case "-":
+                return simplify(get_yelled_number(key1, data) - get_yelled_number(key2, data))
+            case "*":
+                return simplify(get_yelled_number(key1, data) * get_yelled_number(key2, data))
+            case "/":
+                return simplify(get_yelled_number(key1, data) / get_yelled_number(key2, data))
 
     return data[key]
 
