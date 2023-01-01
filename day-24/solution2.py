@@ -19,7 +19,6 @@ class Blizzard:
 	def is_blizzard(self, pos):
 		return self.map[pos[0]][pos[1]] in self.directions.keys()
 
-
 	def is_wall(self, pos) -> bool:
 		return self.map[pos[0]][pos[1]] == '#'
 

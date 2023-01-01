@@ -1,3 +1,4 @@
+from queue import PriorityQueue
 from collections import namedtuple, Counter
 import numpy as np
 from pprint import pprint
@@ -137,6 +138,11 @@ class Blizzard:
 		end_x, end_y = self.expedition_destination
 		return ((x - end_x)**2 + (y - end_y)**2)**0.5 
 
+	def heuristic(self, a, b):
+		x1, y1 = a
+		x2, y2 = b
+		return abs(x1 - x2) + abs(y1 - y2)
+
 	def move(self):
 		x, y = self.expedition_current_loc
 		possibilities = []
@@ -153,17 +159,18 @@ class Blizzard:
 
 		# filter visited
 		if len(possibilities) > 1:
-			distances = list(map(lambda x: (x, self.distance_to_end(x)), possibilities))
+			distances = list(map(lambda x: (x, self.heuristic(x, self.expedition_destination)), possibilities))
 			distances.sort(key=lambda x: x[1])
 			self.expedition.append(distances[0][0])
 		else:
 			if possibilities:
 				self.expedition.append(possibilities[0])
 
+		pprint(possibilities)
 		self.expedition_current_loc = self.expedition[-1]
 
 if __name__ == "__main__":
-	data = get_input("day-24/input.txt") 
+	data = get_input("day-24/test.txt") 
 	blizzard = Blizzard(data)
 	end = blizzard.expedition_destination
 
@@ -184,4 +191,4 @@ if __name__ == "__main__":
 		blizzard.clear_expedition()
 		j += 1
 
-	pprint([" ".join(i) for i in blizzard.map])
+	pprint(["".join(i) for i in blizzard.map])

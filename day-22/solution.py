@@ -24,12 +24,16 @@ class MapBoard:
         self.start = (0, self.board[0].index('.'))
         self.current_position = self.start
         self.route: list[Position] = [self.start]
-        # self.movements = {'>': (0, 1), '<': (0, -1), '^': (-1, 0), 'v': (1, 0)}
         self.directions = {0: {'L': 2, 'R': 1}, 1: {'L': 0, 'R': 2}, 2: {'L': 1, 'R': 3}, 3: {'L': 2, 'R': 0}}
 
     def is_open_tile(self, pos: Position) -> bool:
+        # unused
         x, y = pos
         return self.board[x][y] == '.'
+
+    def is_covered_tile(self, pos: Position) -> bool:
+        x, y = pos
+        return self.board[x][y] in ('▶︎', '◀︎', '▲', '▼')
 
     def is_solid_tile(self, pos: Position) -> bool:
         x, y = pos
@@ -43,42 +47,57 @@ class MapBoard:
         match self.current_direction:
             case 0:
                 row = pos[0]
-                col = self.board[row].index('.')
-                return (row, col)
+                res = ''.join(self.board[row])
+                new_col = res.find('.')
+                if new_col == -1:
+                    new_col = res.find('#')
+                    if new_col == -1:
+                        return (row, 0)
+                return (row, new_col)
             case 1:
                 row, col = pos
-                try:
-                    new_row = [r[col] for r in self.board].index('.')
-                    return (new_row, col)
-                except ValueError:
-                    new_row = [r[col] for r in self.board].index('#')
-                    return (new_row, col)
+                res = "".join([r[col] for r in self.board])
+                new_row = res.find('.')
+                if new_row == -1:
+                    new_row = res.find('#')
+                    if new_row == -1:
+                        return (0, col)
+                return (new_row, col)
             case 2:
-                pprint('HERE')
+                row = pos[0]
+                res = ''.join(self.board[row][::1])
+                new_col = res.find('.')
+                if new_col == -1:
+                    new_col = res.find('#')
+                    if new_col == -1:
+                        return (row, self.col_length-1)
+                return (row, len(self.board[row]) - new_col - 1)
             case 3:
                 row, col = pos
-                try:
-                    new_row = [r[col] for r in self.board][::-1].index('.')
-                    print('ROW')
-                    pprint(new_row)
-                    return (new_row, col)
-                except ValueError:
-                    new_row = [r[col] for r in self.board][::-1].index('#')
-                    return (new_row, col)
+                res = "".join([r[col] for r in self.board][::-1])
+                new_row = res.find('.')
+                if new_row == -1:
+                    new_row = res.find('#')
+                    if new_row == -1:
+                        return (self.row_length-1, col)
+                return (len(res) - new_row - 1, col)
 
-        return (0, 0)
+        return (-1, -1)
 
     def move_right(self, n: int):
         for _ in range(n):
             x, y = self.current_position
             next_tile: Position = (x, y+1)
-            if self.is_solid_tile(next_tile):
-                break
-            elif self.is_void(next_tile):
+
+            if y+1 > self.col_length-1 or self.is_void(next_tile):
                 i, j = self.get_opposite_pos(next_tile)
+                if self.is_solid_tile((i, j)):
+                    break
                 self.board[i][j] = '▶︎'
                 self.route.append((i, j))
                 self.current_position = (i, j)
+            elif self.is_solid_tile(next_tile):
+                break
             else:
                 dx, dy = next_tile 
                 self.board[dx][dy] = '▶︎'
@@ -93,15 +112,17 @@ class MapBoard:
         for _ in range(n):
             x, y = self.current_position
             next_tile: Position = (x-1, y)
-            if self.is_solid_tile(next_tile):
-                break
-            elif self.is_void(next_tile):
+
+            # if IndexError or void
+            if x-1 > self.row_length-1 or self.is_void(next_tile):
                 i, j = self.get_opposite_pos(next_tile)
                 if self.is_solid_tile((i, j)):
                     break
                 self.board[i][j] = '▲'
                 self.route.append((i, j))
                 self.current_position = (i, j)
+            elif self.is_solid_tile(next_tile):
+                break
             else:
                 dx, dy = next_tile 
                 self.board[dx][dy] = '▲'
@@ -116,15 +137,15 @@ class MapBoard:
         for _ in range(n):
             x, y = self.current_position
             next_tile: Position = (x, y-1)
-            if self.is_solid_tile(next_tile):
-                break
-            elif self.is_void(next_tile):
+            if y-1 > self.col_length - 1 or self.is_void(next_tile):
                 i, j = self.get_opposite_pos(next_tile)
                 if self.is_solid_tile((i, j)):
                     break
                 self.board[i][j] = '◀︎'
                 self.route.append((i, j))
                 self.current_position = (i, j)
+            elif self.is_solid_tile(next_tile):
+                break
             else:
                 dx, dy = next_tile 
                 self.board[dx][dy] = '◀︎'
@@ -139,15 +160,16 @@ class MapBoard:
         for _ in range(n):
             x, y = self.current_position
             next_tile: Position = (x+1, y)
-            if self.is_solid_tile(next_tile):
-                break
-            elif self.is_void(next_tile):
+
+            if x + 1 > self.row_length-1 or self.is_void(next_tile):
                 i, j = self.get_opposite_pos(next_tile)
                 if self.is_solid_tile((i, j)):
                     break
                 self.board[i][j] = '▼'
                 self.route.append((i, j))
                 self.current_position = (i, j)
+            elif self.is_solid_tile(next_tile):
+                break
             else:
                 dx, dy = next_tile 
                 self.board[dx][dy] = '▼'
@@ -160,7 +182,6 @@ class MapBoard:
 
     def move(self) -> None:
         for instruction in self.path_description:
-            pprint(instruction)
             if instruction.isnumeric():
                 match self.current_direction:
                     case 0:
@@ -174,6 +195,9 @@ class MapBoard:
             else:
                 self.current_direction = self.directions[self.current_direction][instruction]
 
+    def get_final_password(self, row: int, col: int):
+        return (1000 * row) + (4 * col) + self.current_direction
+
     def __repr__(self):
         pprint([" ".join(row) for row in self.board])
         return ' '
@@ -184,6 +208,6 @@ if __name__ == "__main__":
     path_description = re.split('(\\D+)', directions[0])
 
     board = MapBoard(board, path_description)
-    # pprint(board.path_description[:25])
     board.move()
-    pprint(board.route)
+    row, col = board.route[-1]
+    pprint(board.get_final_password(row+1, col+1))
